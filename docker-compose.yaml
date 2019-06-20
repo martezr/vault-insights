@@ -1,0 +1,45 @@
+version: '3'
+services:
+  vault:
+    hostname: vault
+    image: vault:latest
+    cap_add:
+      - IPC_LOCK
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=vaultpassword
+      - VAULT_ADDR=http://127.0.0.1:8200
+    ports:
+      - "8200:8200"
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: vaultpassword
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: vaultpassword
+  vaultseed:
+    hostname: vaultseed
+    build: ./vaultseed
+    environment:
+      - VAULT_TOKEN=vaultpassword
+      - VAULT_ADDR=http://vault:8200
+    depends_on:
+      - vault
+      - mongo
+    command: ["python","/app/seeddata.py"]
+  insights:
+    hostname: insights
+    build: ./insights
+    environment:
+      - VAULT_TOKEN=vaultpassword
+      - VAULT_ADDR=http://vault:8200
+    depends_on:
+      - vault
+    command: ["sh","/app/insights.sh"]

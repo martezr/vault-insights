@@ -13,7 +13,7 @@ except Exception:
     print("The VAULT_ADDR environment must be set.")
     os._exit(1)
 
-token = ""
+token = "vaultpassword"
 client = hvac.Client(url=os.environ['VAULT_ADDR'], verify=False, token=token)
 
 auth_methods = client.sys.list_auth_methods()['data']
